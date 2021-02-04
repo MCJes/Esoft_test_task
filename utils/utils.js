@@ -8,8 +8,8 @@ const getHashedPassword = async (password) => {
 }
 
 const isPasswordMatches = async (password, hashedPassword) => {
-  const math = await bcrypt.compare(password, hashedPassword)
-  return math
+  const match = await bcrypt.compare(password, hashedPassword)
+  return match
 }
 
 const transformTasksArray = async (arr) => {
