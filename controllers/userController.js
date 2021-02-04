@@ -1,8 +1,8 @@
 import { validationResult } from 'express-validator'
 import jwt from 'jsonwebtoken'
 import db from '../db/dataBase.js'
-import dataBase from "../db/dataBase.js";
-import utils from "../utils/utils.js";
+import dataBase from "../db/dataBase.js"
+import utils from "../utils/utils.js"
 
 const signUp = async (req, res) => {
   try {
@@ -34,9 +34,7 @@ const signUp = async (req, res) => {
 
     res.status(500).json({
       errors: [
-        {
-          msg: e.message
-        }
+        { msg: e.message }
       ],
       message: 'Ошибка!'
     })
@@ -57,7 +55,9 @@ const signIn = async (req, res) => {
     }
 
     //get user info from dataBase
-    const user = await dataBase.selectByUserName('users', userName)
+    const user = await dataBase.selectBy('users', {
+      userName
+    })
 
     if(!user) {
       return res.status(400).json({
@@ -66,7 +66,7 @@ const signIn = async (req, res) => {
       })
     }
 
-    //comparePasswords
+    //compare Passwords
     const passwordMatch = await utils.isPasswordMatches(password, user.password)
 
     if(!passwordMatch) {
@@ -77,9 +77,9 @@ const signIn = async (req, res) => {
     }
 
     //generate token
-    const token = jwt.sign({
-      user
-    }, process.env.JWT_SECRET)
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: '1d'
+    })
 
     //set authorization header
     res.setHeader('authorization', `Bearer ${token}`)
@@ -93,9 +93,7 @@ const signIn = async (req, res) => {
   } catch (e) {
     res.status(500).json({
       errors: [
-        {
-          msg: e.message
-        }
+        { msg: e.message }
       ],
       message: 'Ошибка!'
     })

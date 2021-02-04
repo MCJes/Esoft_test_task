@@ -15,12 +15,12 @@ const connection = mysql.createPool({
   database: process.env.MYSQL_DBNAME
 }).promise()
 
-const insertIntoTable = async (table, items) => {
-  if(!items || !table || Object.keys(items).length === 0)
+const insertIntoTable = async (table, fields) => {
+  if(!fields || !table || Object.keys(fields).length === 0)
     throw new Error('Значение не может быть пустым!')
 
-  const keys = Object.keys(items).join(',')
-  const values =  Object.values(items).join("','")
+  const keys = Object.keys(fields).join(',')
+  const values =  Object.values(fields).join("','")
 
   const queryString = `INSERT INTO ${table} (${keys}) VALUES ('${values}')`
   const result = await connection.query(queryString)
@@ -28,32 +28,59 @@ const insertIntoTable = async (table, items) => {
   return result
 }
 
-const selectById = async (table, id) => {
-  const queryString = `SELECT * FROM ${table} WHERE id = '${id}'`
+//select from table with params
+const selectBy = async (table, params = {}, fields = '*') => {
+
+  //get param name that matches with field name
+  const key = Object.keys(params)[0]
+
+  if(!key)
+    throw new Error('Параметр не может быть пустым')
+  let queryString = ''
+  if(fields === '*')
+    queryString = `SELECT ${fields} FROM ${table} WHERE ${key}='${params[key]}'`
+  else
+    queryString = `SELECT ${fields.join(',')} FROM ${table} WHERE ${key}='${params[key]}'`
+
+  //get result rows
   const [ rows ] = await connection.query(queryString)
-  let item
+  let items
   if(rows.length !== 0) {
-    item = {
-      ...rows[0]
-    }
+    items = rows
   }
-  return item
+  return items
 }
 
-const selectByUserName = async (table, userName) => {
-  const queryString = `SELECT * FROM ${table} WHERE userName = '${userName}'`
-  const [ rows ] = await connection.query(queryString)
-  let item
-  if(rows.length !== 0) {
-    item = {
-      ...rows[0]
-    }
+const updateTable = async (table, fields, id) => {
+  if(!fields || !table || Object.keys(fields).length === 0)
+    throw new Error('Значение не может быть пустым!')
+
+  //set changes like fieldName='fieldValue'
+  const changes = []
+  for (const key in fields) {
+    changes.push(`${key}='${fields[key]}'`)
   }
-  return item
+
+  const queryString = `UPDATE ${table} SET ${changes.join(',')} WHERE id=${id}`
+  const result = await connection.query(queryString)
+
+  return result
+}
+
+const removeBy = async (table, params = {}) => {
+  const key = Object.keys(params)[0]
+
+  if(!key)
+    throw new Error('Параметр не может быть пустым')
+
+  let queryString = `DELETE FROM ${table} WHERE ${key}='${params[key]}'`
+
+  await connection.query(queryString)
 }
 
 export default {
   insertIntoTable,
-  selectById,
-  selectByUserName
+  updateTable,
+  selectBy,
+  removeBy,
 }

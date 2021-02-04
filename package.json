@@ -10,7 +10,9 @@
     "express": "^4.17.1",
     "express-validator": "^6.9.2",
     "jsonwebtoken": "^8.5.1",
-    "mysql2": "^2.2.5"
+    "moment-timezone": "^0.5.32",
+    "mysql2": "^2.2.5",
+    "shortid": "^2.2.16"
   },
   "devDependencies": {
     "nodemon": "^2.0.7",
