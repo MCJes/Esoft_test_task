@@ -44,11 +44,19 @@ const selectBy = async (table, params = {}, fields = '*') => {
 
   //get result rows
   const [ rows ] = await connection.query(queryString)
-  let items
   if(rows.length !== 0) {
-    items = rows
+    return rows
   }
-  return items
+  return false
+}
+
+const selectAll = async (table) => {
+  const [ rows ] = await connection.query(`SELECT * FROM ${table}`)
+
+  if(rows.length !== 0) {
+    return rows
+  }
+  return false
 }
 
 const updateTable = async (table, fields, id) => {
@@ -83,4 +91,5 @@ export default {
   updateTable,
   selectBy,
   removeBy,
+  selectAll
 }

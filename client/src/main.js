@@ -1,28 +1,18 @@
 import Vue from 'vue'
+import Toast from 'vue-toastification'
+import VueLoading from 'vuejs-loading-plugin'
+import 'vue-toastification/dist/index.css'
+import router from "./router"
 import App from './App.vue'
-import VueRouter from 'vue-router';
-import Auth from './components/Auth'
-import Home from "./components/Home";
 
-Vue.use(VueRouter)
+const options = {
+  // You can set your default options here
+}
 
-const routes = [
-  {
-    path: '/',
-    component: Home
-  },
-  {
-    path: '/auth',
-    component: Auth
-  }
-]
-
-const router = new VueRouter({
-  routes,
-  mode: 'history'
+Vue.use(VueLoading, {
+  text: 'Загрузка', // default 'Loading'
 })
-
-Vue.config.productionTip = false;
+Vue.use(Toast, options);
 
 new Vue({
   router,

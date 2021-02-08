@@ -6,20 +6,20 @@ import auth from "../middlewares/auth.js"
 const router = new Router()
 
 router.post('/signUp',
-  check('userName', 'Имя пользователя не может быть пустым').notEmpty(),
-  check('surname', 'Укажите вашу фамилию').notEmpty(),
   check('name', 'Укажите ваше имя').notEmpty(),
-  check('password', 'Пароль не может быть пустым').notEmpty(),
+  check('surname', 'Укажите вашу фамилию').notEmpty(),
+  check('middleName', 'Укажите ваше отчество').notEmpty(),
+  check('userName', 'Укажите имя пользователя').notEmpty(),
+  check('password', 'Укажите пароль').notEmpty(),
   userController.signUp)
 
 router.post('/signIn',
-  check('userName', 'Имя пользователя не может быть пустым').notEmpty(),
-  check('password', 'Пароль не может быть пустым').notEmpty(),
+  check('userName', 'Укажите имя пользователя').notEmpty(),
+  check('password', 'Укажите пароль').notEmpty(),
   userController.signIn)
 
-router.get('/', auth, (req, res) => {
-  console.log(req.user)
-  res.json(req.user)
-})
+router.post('/verify', userController.verifyToken)
+
+router.post('/addLeader', auth, userController.addLeader)
 
 export default router

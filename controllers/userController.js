@@ -55,14 +55,18 @@ const signIn = async (req, res) => {
     }
 
     //get user info from dataBase
-    const user = await dataBase.selectBy('users', {
+    const requestedUser = await dataBase.selectBy('users', {
       userName
     })
 
+    const user = utils.transformResult(requestedUser)
+
     if(!user) {
       return res.status(400).json({
-        errors: [],
-        message: 'Такого пользователя не существует'
+        errors: [
+          {msg: 'Такого пользователя не существует'}
+        ],
+        message: 'Ошибка!'
       })
     }
 
@@ -71,8 +75,10 @@ const signIn = async (req, res) => {
 
     if(!passwordMatch) {
       return res.status(400).json({
-        errors: [],
-        message: 'Пароли не совпадают'
+        errors: [
+          {msg: 'Пароли не совпадают'}
+        ],
+        message: 'Ошибка!'
       })
     }
 
@@ -81,14 +87,76 @@ const signIn = async (req, res) => {
       expiresIn: '1d'
     })
 
-    //set authorization header
-    res.setHeader('authorization', `Bearer ${token}`)
-
     res.status(200).json({
       errors: [],
       message: 'Пользователь',
       token,
-      userId: user.id
+      user: {
+        login: user.userName,
+        name: user.name,
+        surname: user.surname,
+        middleName: user.middleName,
+      }
+    })
+  } catch (e) {
+    res.status(500).json({
+      errors: [
+        { msg: e.message }
+      ],
+      message: 'Ошибка!'
+    })
+  }
+}
+
+const verifyToken = (req, res) => {
+  try {
+    const { token } = req.body
+
+    if(!token) {
+      return res.status(400).json({
+        errors: [
+          { msg: 'Нет токена' }
+        ],
+        message: 'Ошибка!'
+      })
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+    res.status(200).json({
+      errors: [
+        {}
+      ],
+      decodedToken
+    })
+  } catch (e) {
+    res.status(500).json({
+      errors: [
+        { msg: e.message }
+      ],
+      message: 'Ошибка!'
+    })
+  }
+}
+
+const addLeader = async (req, res) => {
+  try {
+    const { manager } = req.body
+    if(!manager) {
+      res.status(500).json({
+        errors: [
+          { msg: 'Пользователь не найден' }
+        ],
+        message: 'Ошибка!'
+      })
+    }
+
+    await db.updateTable('users', {
+      leaderId: req.user.id
+    }, manager)
+
+    res.status(201).json({
+      errors: [],
+      message: 'Руководитель добавлен'
     })
   } catch (e) {
     res.status(500).json({
@@ -103,4 +171,6 @@ const signIn = async (req, res) => {
 export default {
   signUp,
   signIn,
+  verifyToken,
+  addLeader
 }

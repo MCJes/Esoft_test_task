@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import dataBase from "../db/dataBase.js";
+import dataBase from '../db/dataBase.js'
 
 const getHashedPassword = async (password) => {
   const salt = await bcrypt.genSalt(10)
@@ -15,23 +15,23 @@ const isPasswordMatches = async (password, hashedPassword) => {
 const transformTasksArray = async (arr) => {
   const transformedArray = []
   for (const key in arr) {
-    let priorityId = arr[key].priority
-    let statusId = arr[key].status
+    let priority = await dataBase.selectBy('priorities', {
+      id: arr[key].priority
+    })
+    let status = await dataBase.selectBy('statuses', {
+      id: arr[key].status
+    })
     let managerId = arr[key].managerId
     let creatorId = arr[key].creatorId
     const task = {
       ...arr[key],
       priority: {
-        id: priorityId,
-        value: await dataBase.selectBy('priorities', {
-          id: priorityId
-        })
+        id: arr[key].priority,
+        value: priority[0].priority
       },
       status: {
-        id: statusId,
-        value: await dataBase.selectBy('statuses', {
-          id: statusId
-        })
+        id: arr[key].status,
+        value: status[0].status
       },
       manager: {
         id: managerId,
@@ -56,8 +56,20 @@ const selectUser = async (id) => {
   return user[0]
 }
 
+const transformResult = (object) => {
+  const o = object[0]
+  const newObj = {}
+
+  for (const item in o) {
+    newObj[item] = o[item]
+  }
+
+  return newObj
+}
+
 export default  {
   getHashedPassword,
   isPasswordMatches,
-  transformTasksArray
+  transformTasksArray,
+  transformResult
 }

@@ -15,7 +15,19 @@ const createTask = async (req, res) => {
     }
 
     const { heading, description, priority, status, managerId, completedAt } = req.body
-    console.log(completedAt)
+    const rawManager =  await db.selectBy('users', {
+      id: managerId
+    })
+    const manager = utils.transformResult(rawManager)
+
+    if(manager.leaderId !== req.user.id) {
+      return res.status(400).json({
+        errors: [
+          { msg: 'Этот пользователь не является вашим подчиненным' }
+        ],
+          message: 'Ошибка!'
+      })
+    }
 
     await db.insertIntoTable('tasks', {
       heading,
@@ -172,14 +184,25 @@ const removeTask = async (req, res) => {
   }
 }
 
-const getManagedTasks = async (req, res) => {
+const getTasks = async (req, res) => {
   try {
-    const rawTasks = await db.selectBy('tasks', {
-      managerId: req.user.id
-    })
+    let rawTasks = ''
+    if(req.params.type === 'managed') {
+       rawTasks = await db.selectBy('tasks', {
+        managerId: req.user.id
+      })
+    } else if(!isNaN(req.params.type)) {
+      rawTasks = await db.selectBy('tasks', {
+        id: Number(req.params.type)
+      })
+    } else {
+      rawTasks = await db.selectBy('tasks', {
+        creatorId: req.user.id
+      })
+    }
 
     if(!rawTasks) {
-      res.status(404).json({
+      return res.status(404).json({
         errors: [],
         message: 'Задачи не найдены'
       })
@@ -198,10 +221,51 @@ const getManagedTasks = async (req, res) => {
   }
 }
 
+const getProps = async (req, res) => {
+  try {
+    const priorities = await db.selectAll('priorities')
+    const statuses = await db.selectAll('statuses')
+
+    res.status(200).json({
+      priorities,
+      statuses
+    })
+  } catch (e) {
+    res.status(500).json({
+      errors: [
+        { msg: e.message }
+      ],
+      message: 'Ошибка!'
+    })
+  }
+}
+
+const managersGet = async (req, res) => {
+  try {
+    let users = await db.selectAll('users')
+    if(req.params.type === 'none') {
+      users = users.filter(x => x.leaderId === null && x.id !== req.user.i && req.user.leaderId !== x.id)
+    } else {
+      users = users.filter(x => x.leaderId === req.user.id)
+    }
+
+    res.status(200).json(users)
+  } catch (e) {
+    res.status(500).json({
+      errors: [
+        { msg: e.message }
+      ],
+      message: 'Ошибка!'
+    })
+  }
+}
+
 export default {
   createTask,
   updateTask,
   removeTask,
   updateTaskStatus,
-  getManagedTasks
+  getTasks,
+  getProps,
+  managersGet
 }
