@@ -320,12 +320,12 @@ export default {
                  ${user.middleName.substring(0, 1).toUpperCase()}.`
 
       const tasks = await request('/tasks/get/managed')
-      if(tasks) {
+      if(tasks.errors.length > 0) {
         this.tasks = tasks
         this.sortMyRegular()
       }
       const tasksC = await request('/tasks/get/created')
-      if(tasksC) {
+      if(tasksC.errors.length > 0) {
         this.tasksC = tasksC
         this.sortCRegular()
       }
@@ -420,29 +420,41 @@ export default {
       await this.getTasks()
     },
     sortMyRegular() {
-      this.tasks = this.tasks.sort((a,b) =>
-          (new Date(a.updatedAt.split('T')[0]) < new Date(b.updatedAt.split('T')[0])) ? 1 :
-              ((new Date(b.updatedAt.split('T')[0]) < new Date(a.updatedAt.split('T')[0])) ? -1 : 0))
+      console.log(this.tasks)
+      if(this.tasks.length !== 0) {
+        this.tasks = this.tasks.sort((a,b) =>
+            (new Date(a.updatedAt.split('T')[0]) < new Date(b.updatedAt.split('T')[0])) ? 1 :
+                ((new Date(b.updatedAt.split('T')[0]) < new Date(a.updatedAt.split('T')[0])) ? -1 : 0))
+      }
     },
     sortCRegular() {
-      this.tasksC = this.tasksC.sort((a,b) =>
-          (new Date(a.updatedAt.split('T')[0]) < new Date(b.updatedAt.split('T')[0])) ? 1 :
-              ((new Date(b.updatedAt.split('T')[0]) < new Date(a.updatedAt.split('T')[0])) ? -1 : 0))
+      if(this.tasksC.length !== 0) {
+        this.tasksC = this.tasksC.sort((a,b) =>
+            (new Date(a.updatedAt.split('T')[0]) < new Date(b.updatedAt.split('T')[0])) ? 1 :
+                ((new Date(b.updatedAt.split('T')[0]) < new Date(a.updatedAt.split('T')[0])) ? -1 : 0))
+      }
     },
     sortMyDateEnd() {
-      this.tasks = this.tasks.sort((a,b) =>
-          (new Date(a.completedAt.split('T')[0]) > new Date(b.completedAt.split('T')[0])) ? 1 :
-              ((new Date(b.completedAt.split('T')[0]) > new Date(a.completedAt.split('T')[0])) ? -1 : 0))
+      if(this.tasks.length !== 0) {
+        this.tasks = this.tasks.sort((a,b) =>
+            (new Date(a.completedAt.split('T')[0]) > new Date(b.completedAt.split('T')[0])) ? 1 :
+                ((new Date(b.completedAt.split('T')[0]) > new Date(a.completedAt.split('T')[0])) ? -1 : 0))
+      }
     },
     sortCDateEnd() {
-      this.tasksC = this.tasksC.sort((a,b) =>
-          (new Date(a.completedAt.split('T')[0]) > new Date(b.completedAt.split('T')[0])) ? 1 :
-              ((new Date(b.completedAt.split('T')[0]) > new Date(a.completedAt.split('T')[0])) ? -1 : 0))
+      if(this.tasksC.length !== 0) {
+        this.tasksC = this.tasksC.sort((a,b) =>
+            (new Date(a.completedAt.split('T')[0]) > new Date(b.completedAt.split('T')[0])) ? 1 :
+                ((new Date(b.completedAt.split('T')[0]) > new Date(a.completedAt.split('T')[0])) ? -1 : 0))
+      }
     },
     sortManagers() {
-      this.tasksC = this.tasksC.sort((a,b) =>
-          (a.manager.value.surname > b.manager.value.surname) ? 1 :
-              ((b.manager.value.surname > a.manager.value.surname) ? -1 : 0))
+      if(this.tasksC.length !== 0) {
+        this.tasksC = this.tasksC.sort((a,b) =>
+            (a.manager.value.surname > b.manager.value.surname) ? 1 :
+                ((b.manager.value.surname > a.manager.value.surname) ? -1 : 0))
+      }
+
     },
     async editTask() {
       this.$loading(true)

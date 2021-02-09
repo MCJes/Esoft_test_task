@@ -33,8 +33,6 @@ router.post('/updateStatus',
   check('taskId', 'Укажите задачу').notEmpty(),
   tasksController.updateTaskStatus)
 
-router.delete('/remove', auth, tasksController.removeTask)
-
 router.get('/props', auth, tasksController.getProps)
 
 router.get('/users/:type', auth, tasksController.managersGet)

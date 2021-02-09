@@ -1,6 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
-// import cors from 'cors'
+import cors from 'cors'
 import path from 'path'
 import userRouter from './routes/user.router.js'
 import tasksRouter from './routes/tasks.router.js'
@@ -11,7 +11,7 @@ const __dirname = path.resolve()
 
 const PORT = process.env.PORT || 3000
 
-// app.use(cors())
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 

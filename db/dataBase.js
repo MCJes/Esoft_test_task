@@ -2,11 +2,6 @@ import mysql from 'mysql2'
 import dotenv from 'dotenv'
 dotenv.config()
 
-//create table users
-
-//CREATE TABLE `todolist`.`users` ( `id` INT NOT NULL AUTO_INCREMENT , `userName` VARCHAR(255) NOT NULL , `name` VARCHAR(255) NOT NULL , `middleName` VARCHAR(255) NOT NULL , `sirname` VARCHAR(255) NOT NULL , `password` VARCHAR(255) NOT NULL , `leaderId` INT NOT NULL , PRIMARY KEY (`id`), UNIQUE (`userName`)) ENGINE = InnoDB;
-// CREATE TABLE `todolist`.`tasks` ( `id` INT NOT NULL , `heading` VARCHAR(255) NOT NULL , `description` VARCHAR(1000) NOT NULL , `priority` INT NOT NULL , `status` INT NOT NULL , `creatorId` INT NOT NULL , `managerId` INT NOT NULL , `createdAt` BIGINT NOT NULL , `updatedAt` BIGINT NOT NULL , `completedAt` BIGINT NOT NULL , PRIMARY KEY (`id`), INDEX (`creatorId`), INDEX (`managerId`), INDEX (`priority`), INDEX (`status`)) ENGINE = InnoDB;
-
 //create mysql connection (with promises)
 const connection = mysql.createPool({
   host: process.env.MYSQL_HOST,

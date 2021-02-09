@@ -228,7 +228,6 @@ const managersGet = async (req, res) => {
 export default {
   createTask,
   updateTask,
-  removeTask,
   updateTaskStatus,
   getTasks,
   getProps,
