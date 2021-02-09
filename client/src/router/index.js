@@ -59,7 +59,11 @@ router.beforeEach(async (to, from, next) => {
       next('/login')
     }
   } else {
-    next()
+    if(isLoggedIn) {
+      next('/tasks')
+    } else {
+      next()
+    }
   }
 
   next()
