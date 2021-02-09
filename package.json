@@ -24,6 +24,7 @@
     "server": "nodemon app.js",
     "dev": "concurrently \"nodemon app.js\" \"npm run serve --prefix client\"",
     "install:client": "npm i --prefix client",
+    "build:client": "npm i --prefix client",
     "build": "npm run install:client && npm run build --prefix client",
     "start": "cross-env NODE_ENV=production node app.js"
   },
