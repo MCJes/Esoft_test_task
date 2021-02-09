@@ -9,6 +9,8 @@ const app = express()
 
 const __dirname = path.resolve()
 
+const PORT = process.env.PORT || 3000
+
 // app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -27,5 +29,5 @@ if(process.env.NODE_ENV === 'production') {
 
 
 
-app.listen(3000)
+app.listen(PORT)
 
