@@ -9,7 +9,7 @@ export const request = async (url, method = 'GET', data = null) => {
       body = JSON.stringify(data)
     }
 
-    const response = await fetch(`http://localhost:3000/api${url}`, {
+    const response = await fetch(`/api${url}`, {
       method,
       body,
       headers,
