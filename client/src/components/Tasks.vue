@@ -320,12 +320,12 @@ export default {
                  ${user.middleName.substring(0, 1).toUpperCase()}.`
 
       const tasks = await request('/tasks/get/managed')
-      if(tasks.errors.length > 0) {
+      if(!tasks.errors) {
         this.tasks = tasks
         this.sortMyRegular()
       }
       const tasksC = await request('/tasks/get/created')
-      if(tasksC.errors.length > 0) {
+      if(!tasksC.errors) {
         this.tasksC = tasksC
         this.sortCRegular()
       }
@@ -409,7 +409,10 @@ export default {
       await request('/user/addLeader', 'POST', {
         manager: this.manager
       })
-      this.$loading(true)
+      this.$loading(false)
+
+      this.closeUsers()
+      await this.getTasks()
     },
     async updateStatus() {
       await request('/tasks/updateStatus', 'POST', {
