@@ -23,6 +23,8 @@
   "scripts": {
     "server": "nodemon app.js",
     "dev": "concurrently \"nodemon app.js\" \"npm run serve --prefix client\"",
+    "install:client": "npm i --prefix client",
+    "build": "npm run build --prefix client",
     "start": "cross-env NODE_ENV=production node app.js"
   },
   "repository": {
