@@ -149,42 +149,6 @@ const updateTaskStatus = async (req, res) => {
   }
 }
 
-const removeTask = async (req, res) => {
-  try {
-    const { taskId } = req.body
-
-    const creatorId = await db.selectBy('tasks', {
-      id: taskId
-    })
-
-    if(creatorId !== req.user.id) {
-      res.status(403).json({
-        errors: [
-          { msg: 'У вас нет прав редактировать данную задачу' }
-        ],
-        message: 'Ошибка'
-      })
-    }
-
-    await db.removeBy('tasks', {
-      taskId
-    })
-
-    res.status(200).json({
-      errors: [],
-      message: 'Задача удалена!'
-    })
-
-  } catch (e) {
-    res.status(500).json({
-      errors: [
-        { msg: e.message }
-      ],
-      message: 'Ошибка!'
-    })
-  }
-}
-
 const getTasks = async (req, res) => {
   try {
     let rawTasks = ''
