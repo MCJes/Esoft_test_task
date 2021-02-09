@@ -66,12 +66,13 @@ const updateTask = async (req, res) => {
 
     const { heading, description, priority, status, managerId, completedAt, taskId } = req.body
 
-    const creatorId = await db.selectBy('tasks', {
+    let task = await db.selectBy('tasks', {
       id: taskId
     })
+    const creatorId = utils.transformResult(task).creatorId
 
     if(creatorId !== req.user.id) {
-      res.status(403).json({
+      return res.status(403).json({
         errors: [
           { msg: 'У вас нет прав редактировать данную задачу' }
         ],
@@ -86,7 +87,7 @@ const updateTask = async (req, res) => {
       status,
       creatorId,
       managerId,
-      completedAt
+      completedAt: moment(Number(completedAt)).format('YY.MM.DD, HH:mm:ss')
     }, taskId)
 
     res.status(200).json({
@@ -244,7 +245,7 @@ const managersGet = async (req, res) => {
   try {
     let users = await db.selectAll('users')
     if(req.params.type === 'none') {
-      users = users.filter(x => x.leaderId === null && x.id !== req.user.i && req.user.leaderId !== x.id)
+      users = users.filter(x => x.leaderId === null && x.id !== req.user.id && req.user.leaderId !== x.id)
     } else {
       users = users.filter(x => x.leaderId === req.user.id)
     }

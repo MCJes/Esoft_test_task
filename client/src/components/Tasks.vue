@@ -37,7 +37,10 @@
                    @click="openStatus">
                 <div class="task__row">
                   <div class="task__col">
-                    <p class="heading">{{task.heading}}</p>
+                    <p class="heading" v-bind:class="{
+                      'outDate': new Date(task.completedAt) < Date.now(),
+                      'completed': task.status.id === 3
+                    }">{{task.heading}}</p>
                     <p>Ответственный: {{name}}</p>
                     <p>Приоритет: {{task.priority.value}}</p>
                   </div>
@@ -60,10 +63,14 @@
             <div class="tasks__container">
               <div class="task" v-for="task in tasksC"
                    v-bind:key="task.id"
-                   v-bind:value="task.id">
+                   v-bind:value="task.id"
+                   @click="openEdit">
                 <div class="task__row">
                   <div class="task__col">
-                    <p class="heading">{{task.heading}}</p>
+                    <p class="heading" v-bind:class="{
+                      'outDate': new Date(task.completedAt) < Date.now(),
+                      'completed': task.status.id === 3
+                    }">{{task.heading}}</p>
                     <p>Ответственный: {{`${task.manager.value.surname}
                  ${task.manager.value.name.substring(0, 1).toUpperCase()}.
                  ${task.manager.value.middleName.substring(0, 1).toUpperCase()}.`}}</p>
@@ -92,19 +99,19 @@
             <input type="text"
                    name="heading"
                    class="control"
-                    v-model="headingC">
+                    v-model="heading">
             <span class="border__filled"></span>
           </div>
           <div class="form__control">
             <span class="input__name">Описание</span>
-           <textarea class="text" rows="5" v-model="descriptionC"></textarea>
+           <textarea class="text" rows="5" v-model="description"></textarea>
           </div>
           <div class="modal__row">
             <div class="form__control">
               <span class="input__name">Приоритет</span>
               <select name="priority"
                       class="control"
-                      v-model="priorityC">
+                      v-model="priority">
                 <option v-for="priority in priorityList" v-bind:value="priority.id" v-bind:key="priority.id">
                   {{priority.priority}}
                 </option>
@@ -114,7 +121,7 @@
               <span class="input__name">Статус</span>
               <select name="status"
                       class="control"
-                      v-model="statusC">
+                      v-model="status">
                 <option v-for="status in statusList" v-bind:value="status.id" v-bind:key="status.id">
                   {{status.status}}
                 </option>
@@ -124,7 +131,7 @@
               <span class="input__name">Ответственный</span>
               <select name="manager"
                       class="control"
-                      v-model="userC">
+                      v-model="user">
                 <option v-for="user in usersMy" v-bind:key="user.id" v-bind:value="user.id">
                   {{`${user.surname.substring(0, 1).toUpperCase()}${user.surname.substring(1, user.surname.length)}
                  ${user.name.substring(0, 1).toUpperCase()}.
@@ -137,7 +144,7 @@
               <input type="date"
                      name="date"
                      class="control"
-                     v-model="dateEndC">
+                     v-model="dateEnd">
             </div>
           </div>
         </div>
@@ -194,6 +201,74 @@
         </div>
       </div>
     </div>
+    <div id="modal__edit" class="modal" v-bind:style="displayEdit">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="close" @click="closeEdit">&times;</div>
+          <h2>Редактировать задачу</h2>
+        </div>
+        <div class="modal-body">
+          <div class="form__control">
+            <span class="input__name">Заголовок</span>
+            <input type="text"
+                   name="heading"
+                   class="control"
+                   v-model="currentTask.heading">
+            <span class="border__filled"></span>
+          </div>
+          <div class="form__control">
+            <span class="input__name">Описание</span>
+            <textarea class="text" rows="5" v-model="currentTask.description"></textarea>
+          </div>
+          <div class="modal__row">
+            <div class="form__control">
+              <span class="input__name">Приоритет</span>
+              <select name="priority"
+                      class="control"
+                      v-model="priorityEdit">
+                <option v-for="priority in priorityList"
+                        v-bind:value="priority.id"
+                        v-bind:key="priority.id">
+                  {{priority.priority}}
+                </option>
+              </select>
+            </div>
+            <div class="form__control">
+              <span class="input__name">Статус</span>
+              <select name="status"
+                      class="control"
+                      v-model="statusEdit">
+                <option v-for="status in statusList" v-bind:value="status.id" v-bind:key="status.id">
+                  {{status.status}}
+                </option>
+              </select>
+            </div>
+            <div class="form__control">
+              <span class="input__name">Ответственный</span>
+              <select name="manager"
+                      class="control"
+                      v-model="managerEdit">
+                <option v-for="user in usersMy" v-bind:key="user.id" v-bind:value="user.id">
+                  {{`${user.surname.substring(0, 1).toUpperCase()}${user.surname.substring(1, user.surname.length)}
+                 ${user.name.substring(0, 1).toUpperCase()}.
+                 ${user.middleName.substring(0, 1).toUpperCase()}.`}} | Логин: {{user.userName}}
+                </option>
+              </select>
+            </div>
+            <div class="form__control">
+              <span class="input__name">Дата окончания</span>
+              <input type="date"
+                     name="date"
+                     class="control"
+                     v-model="dateEdit">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-create" @click="editTask">Изменить</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -212,19 +287,20 @@ export default {
       create: 'none',
       usersModal: 'none',
       editStatus: 'none',
-      headingC: '',
-      descriptionC: '',
-      priorityC: '',
+      heading: '',
+      description: '',
+      priority: '',
       priorityList: [],
-      statusC: '',
+      status: '',
       statusList: [],
-      userC: '',
+      user: '',
       users: [],
       usersMy: [],
-      dateEndC: '',
+      dateEnd: '',
       manager: '',
       editedStatus: '',
-      currentTask: ''
+      currentTask: '',
+      editModal: 'none'
     }
   },
   async mounted() {
@@ -272,36 +348,45 @@ export default {
     openUsers() {
       this.usersModal = 'block'
     },
+    closeEdit() {
+      this.editModal = 'none'
+    },
+    async openEdit(e) {
+      const currentTask = await request(`/tasks/get/${e.target.getAttribute('value')}`)
+      this.currentTask = currentTask[0]
+      this.editModal = 'block'
+    },
     async openStatus(e) {
       const currentTask = await request(`/tasks/get/${e.target.getAttribute('value')}`)
-      this.editStatus = 'block'
       this.currentTask = currentTask[0]
+      this.editStatus = 'block'
+
     },
     closeStatus() {
       this.editStatus = 'none'
     },
     async createTask() {
       this.$loading(true)
-      let date = this.dateEndC.split('-')
+      let date = this.dateEnd.split('-')
       date = new Date(Number(date[0]), date[1] - 1, Number(date[2])).getTime()
 
       const response = await request('/tasks/create', 'POST', {
-        heading: this.headingC,
-        description: this.descriptionC,
-        priority: this.priorityC,
-        status: this.statusC,
-        managerId: this.userC,
+        heading: this.heading,
+        description: this.description,
+        priority: this.priority,
+        status: this.status,
+        managerId: this.user,
         completedAt: date
       })
 
       this.$loading(false)
 
-      this.headingC = ''
-      this.descriptionC = ''
-      this.priorityC = ''
-      this.statusC = ''
-      this.userC = ''
-      this.dateEndC = ''
+      this.heading = ''
+      this.description = ''
+      this.priority = ''
+      this.status = ''
+      this.user = ''
+      this.dateEnd = ''
 
       if(response.errors.length > 0) {
         let timeout = 4000
@@ -358,6 +443,38 @@ export default {
       this.tasksC = this.tasksC.sort((a,b) =>
           (a.manager.value.surname > b.manager.value.surname) ? 1 :
               ((b.manager.value.surname > a.manager.value.surname) ? -1 : 0))
+    },
+    async editTask() {
+      this.$loading(true)
+      let date = this.currentTask.completedAt.split('T')[0].split('-')
+      date = new Date(Number(date[0]), date[1] - 1, Number(date[2])).getTime()
+
+      const response = await request('/tasks/update', 'POST', {
+        heading: this.currentTask.heading,
+        description: this.currentTask.description,
+        priority: this.currentTask.priority.id,
+        status: this.currentTask.status.id,
+        managerId: this.currentTask.manager.id,
+        completedAt: date,
+        taskId: this.currentTask.id
+       })
+      this.$loading(false)
+
+      if(response.errors.length > 0) {
+        let timeout = 4000
+        response.errors.forEach(err => {
+          this.$toast(err.msg, {
+            timeout,
+            type: TYPE.WARNING,
+            position: 'bottom-right',
+          })
+          timeout += 100
+        })
+        return
+      }
+
+      this.closeEdit()
+      await this.getTasks()
     }
   },
   computed: {
@@ -371,6 +488,11 @@ export default {
         display: this.usersModal
       }
     },
+    displayEdit() {
+      return {
+        display: this.editModal
+      }
+    },
     taskCShow() {
       return this.tasksC.length > 0
     },
@@ -380,6 +502,38 @@ export default {
     displayStatus() {
       return {
         display: this.editStatus
+      }
+    },
+    priorityEdit: {
+      get() {
+        return !(this.currentTask.priority) ? '' : this.currentTask.priority.id
+      },
+      set(val) {
+        this.currentTask.priority.id = val
+      }
+    },
+    statusEdit: {
+      get() {
+        return !(this.currentTask.status) ? '' : this.currentTask.status.id
+      },
+      set(val) {
+        this.currentTask.status.id = val
+      }
+    },
+    managerEdit: {
+      get() {
+        return !(this.currentTask.manager) ? '' : this.currentTask.manager.id
+      },
+      set(val) {
+        this.currentTask.manager.id = val
+      }
+    },
+    dateEdit: {
+      get() {
+        return !this.currentTask.completedAt ? '' : this.currentTask.completedAt.split('T')[0]
+      },
+      set(val) {
+        this.currentTask.completedAt = val
       }
     }
   }
@@ -490,7 +644,8 @@ h3 {
 .task {
   padding: 10px;
   width: 260px;
-  max-height: 140px;
+  height: 150px;
+  //max-height: 150px;
   transition: 0.2s ease-in-out;
   cursor: pointer;
   border-radius: 6px;
@@ -512,10 +667,14 @@ h3 {
     display: flex;
     flex-direction: column;
     color: #818181;
+    p:first-child{
+      margin-top: 0;
+    }
 
     p {
       pointer-events: none;
       margin-bottom: 10px;
+      margin-top: auto;
     }
 
     p:last-child {
@@ -525,6 +684,14 @@ h3 {
     .heading {
       pointer-events: none;
       font-weight: bold;
+
+      &.outDate {
+        color: #de1515;
+      }
+
+      &.completed {
+        color: #16c116;
+      }
     }
   }
 
